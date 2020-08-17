@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <gpm.h>
 
+
 #define MAN 6
 #define TIME 5
 
@@ -15,6 +16,7 @@ unsigned short int cacke = 20;
 
 
 pthread_t tid[MAN];
+pthread_t m;
 pthread_mutex_t hMutexBlockState, hMutexBlockKnife, hMouse;
 const unsigned short int StopX=49, StopY=10;
 
@@ -111,7 +113,7 @@ void man(void* arg){
 }
 
 
-void mouse(){
+void mouse(void* arg){
 	int x, y, button;
 	struct Gpm_Event event;
 	struct Gpm_Connect connect;
@@ -127,9 +129,14 @@ void mouse(){
 		Gpm_GetEvent(&event);
 		x = event.x;
 		y = event.y;
-		button = event.button;
-		printf("\033[1;60H\033[1;33m")
-		printf("row=%3d col=%3d key=%1d\n", x, y, button);	
+		button = event.buttons;
+		if(button==4){
+		//printf("%d", x);
+			if((x>= 50 && x<= 59) && (y>=10 && y<=21)){
+				printf("WORK");
+				cacke=20;
+			}
+		}	
 	}
 	Gpm_Close();
 }
@@ -142,7 +149,7 @@ int main(){
 	printCacke();
 	pthread_mutex_init(&hMutexBlockState, NULL);
 	pthread_mutex_init(&hMutexBlockKnife, NULL);
-	rc = pthread_create();
+	rc = pthread_create(&m, NULL, (void*)mouse, 0);
 	for(int i = 0; i < MAN; i++){
 		rc = pthread_create(&tid[i], NULL, (void*)man, (void*)i+1);
 	}
